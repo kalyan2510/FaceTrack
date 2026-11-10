@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FaceTrack settings - administrator profile, security, camera preferences and system information.">
+  <meta name="theme-color" content="#14213D">
+  <title>Settings · FaceTrack</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="settings">
+  <noscript>
+    <div style="padding:24px;background:#fef3c7;color:#92400e;font-family:sans-serif;">Enable JavaScript to manage FaceTrack settings.</div>
+  </noscript>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-wrapper">
+      <header class="topbar" id="topbar"></header>
+
+      <main class="page-content" id="pageContent">
+        <div class="page-toolbar">
+          <div>
+            <h2>Settings</h2>
+            <p class="toolbar-sub">Manage your admin profile, security, camera preferences and inspect the system.</p>
+          </div>
+          <div class="toolbar-actions">
+            <button type="button" class="btn btn-light-soft" id="refreshSystemBtn"><i class="fa-solid fa-rotate"></i> Refresh status</button>
+            <button type="button" class="btn btn-primary" id="testConnectionBtn"><i class="fa-solid fa-plug"></i> Test connection</button>
+          </div>
+        </div>
+
+        <div class="demo-banner" id="settingsDemoNote" style="display:none;">
+          <i class="fa-solid fa-flask"></i>
+          <span><strong>Demo Mode:</strong> profile and password changes are stored only in this browser. Demo data stays in local storage and is never sent to the Flask backend, even when the API is running.</span>
+        </div>
+
+        <div class="settings-grid">
+          <!-- Left column -->
+          <div>
+            <section class="settings-card" id="profile">
+              <div class="settings-head">
+                <span class="sh-icon"><i class="fa-solid fa-user-gear"></i></span>
+                <div>
+                  <h3>Administrator Profile</h3>
+                  <p>Shown in the sidebar and top navigation</p>
+                </div>
+              </div>
+
+              <div class="profile-hero">
+                <span id="profileAvatar"></span>
+                <div class="min-w-0">
+                  <h3 id="profileName">Administrator</h3>
+                  <p id="profileEmail">admin@facetrack.com</p>
+                  <span class="badge-soft badge-info mt-2" id="profileRole"><i class="fa-solid fa-shield-halved"></i> Administrator</span>
+                </div>
+              </div>
+
+              <form id="profileForm" novalidate>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="profileNameInput">Full name</label>
+                    <input type="text" class="form-control" id="profileNameInput" autocomplete="name" maxlength="80" required>
+                    <div class="invalid-feedback">Enter your full name.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="profileEmailInput">Email address</label>
+                    <input type="email" class="form-control" id="profileEmailInput" autocomplete="email" maxlength="120" required>
+                    <div class="invalid-feedback">Enter a valid email address.</div>
+                  </div>
+                </div>
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+                  <span class="fs-12 text-muted-ft"><i class="fa-solid fa-circle-info me-1 text-primary-ft"></i> The email is your login identifier.</span>
+                  <button type="submit" class="btn btn-primary" id="saveProfileBtn"><i class="fa-solid fa-floppy-disk"></i> Save profile</button>
+                </div>
+                <div class="mt-3" id="profileResult"></div>
+              </form>
+            </section>
+
+            <section class="settings-card" id="security">
+              <div class="settings-head">
+                <span class="sh-icon" style="background:#FEF2F2;color:#DC2626;"><i class="fa-solid fa-lock"></i></span>
+                <div>
+                  <h3>Password &amp; Security</h3>
+                  <p>Use at least 8 characters with a letter and a number</p>
+                </div>
+              </div>
+
+              <form id="passwordForm" novalidate>
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label" for="currentPassword">Current password</label>
+                    <input type="password" class="form-control" id="currentPassword" autocomplete="current-password" required>
+                    <div class="invalid-feedback">Enter your current password.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="newPassword">New password</label>
+                    <input type="password" class="form-control" id="newPassword" autocomplete="new-password" required>
+                    <div class="invalid-feedback">Use at least 8 characters with a letter and a number.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="confirmPassword">Confirm new password</label>
+                    <input type="password" class="form-control" id="confirmPassword" autocomplete="new-password" required>
+                    <div class="invalid-feedback">Passwords must match.</div>
+                  </div>
+                </div>
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+                  <span class="fs-12 text-muted-ft"><i class="fa-solid fa-shield-halved me-1 text-primary-ft"></i> Sessions stay valid until they expire.</span>
+                  <button type="submit" class="btn btn-primary" id="changePasswordBtn"><i class="fa-solid fa-key"></i> Update password</button>
+                </div>
+                <div class="mt-3" id="passwordResult"></div>
+              </form>
+            </section>
+
+            <section class="settings-card" id="camera">
+              <div class="settings-head">
+                <span class="sh-icon" style="background:#ECFDF5;color:#16A34A;"><i class="fa-solid fa-video"></i></span>
+                <div>
+                  <h3>Camera &amp; Recognition Preferences</h3>
+                  <p>Saved in this browser only · applies to capture and attendance pages</p>
+                </div>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-md-7">
+                  <label class="form-label" for="cameraDeviceSelect">Preferred camera</label>
+                  <div class="d-flex gap-2">
+                    <select class="form-select" id="cameraDeviceSelect">
+                      <option value="">Default camera</option>
+                    </select>
+                    <button type="button" class="btn btn-outline-soft flex-shrink-0" id="refreshCamerasBtn" title="Refresh camera list"><i class="fa-solid fa-rotate"></i></button>
+                  </div>
+                  <div class="fs-12 text-muted-ft mt-1">Camera names appear after the browser grants camera permission.</div>
+                </div>
+                <div class="col-md-5">
+                  <label class="form-label" for="scanIntervalRange">Scan interval: <strong id="scanIntervalValue">2.6s</strong></label>
+                  <input type="range" class="form-range" id="scanIntervalRange" min="1500" max="8000" step="100" value="2600">
+                  <div class="fs-12 text-muted-ft">How often a frame is checked during live attendance.</div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="mirrorPreviewToggle">
+                <label class="form-check-label" for="mirrorPreviewToggle">Mirror the camera preview</label>
+                <div class="fs-12 text-muted-ft">The saved frame is always corrected, regardless of this preview setting.</div>
+              </div>
+
+              <div class="d-flex justify-content-end mt-3">
+                <button type="button" class="btn btn-primary" id="savePrefsBtn"><i class="fa-solid fa-floppy-disk"></i> Save preferences</button>
+              </div>
+              <div class="mt-3" id="prefsResult"></div>
+            </section>
+          </div>
+
+          <!-- Right column -->
+          <div>
+            <section class="settings-card" id="system">
+              <div class="settings-head">
+                <span class="sh-icon"><i class="fa-solid fa-server"></i></span>
+                <div>
+                  <h3>System Information</h3>
+                  <p id="systemUpdated">Loading runtime details…</p>
+                </div>
+              </div>
+
+              <div class="system-status-list" id="systemStatusList">
+                <div class="system-status-item"><i class="fa-solid fa-circle-notch fa-spin"></i> <span>Checking backend…</span><span class="ssi-value warn">Wait</span></div>
+              </div>
+
+              <div class="info-list" id="systemInfoList">
+                <div class="info-row"><span class="info-label">API base URL</span><span class="info-value"><code id="sysApiUrl">—</code></span></div>
+                <div class="info-row"><span class="info-label">Database</span><span class="info-value" id="sysDatabase">—</span></div>
+                <div class="info-row"><span class="info-label">Face engine</span><span class="info-value" id="sysEngine">—</span></div>
+                <div class="info-row"><span class="info-label">Recognition model</span><span class="info-value" id="sysModel">—</span></div>
+                <div class="info-row"><span class="info-label">Match threshold</span><span class="info-value" id="sysThreshold">—</span></div>
+                <div class="info-row"><span class="info-label">Students / records</span><span class="info-value" id="sysCounts">—</span></div>
+                <div class="info-row"><span class="info-label">Face samples</span><span class="info-value" id="sysSamples">—</span></div>
+              </div>
+
+              <div class="face-status-box info mt-3" id="connectionResult">
+                <i class="fa-solid fa-circle-info"></i>
+                <div>Press <strong>Test connection</strong> to verify the Flask API and the OpenCV engine.</div>
+              </div>
+            </section>
+
+            <section class="settings-card" id="data">
+              <div class="settings-head">
+                <span class="sh-icon" style="background:#FFFBEB;color:#D97706;"><i class="fa-solid fa-database"></i></span>
+                <div>
+                  <h3>Data &amp; Session</h3>
+                  <p>Reset sample data or end your session</p>
+                </div>
+              </div>
+
+              <div class="info-list">
+                <div class="info-row"><span class="info-label">Current mode</span><span class="info-value" id="dataMode">—</span></div>
+                <div class="info-row"><span class="info-label">Demo storage key</span><span class="info-value"><code id="dataStorageKey">—</code></span></div>
+                <div class="info-row"><span class="info-label">Signed in as</span><span class="info-value" id="dataAdmin">—</span></div>
+              </div>
+
+              <div class="danger-zone" id="resetDemoZone">
+                <div>
+                  <div class="fw-600 fs-13" style="color:#991B1B;">Reset demo data</div>
+                  <p>Restores the sample students and attendance. Only available in Demo Mode; live SQLite data is never touched from the browser.</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger flex-shrink-0" id="resetDemoBtn" disabled>
+                  <i class="fa-solid fa-rotate-left"></i> Reset
+                </button>
+              </div>
+
+              <button type="button" class="btn btn-outline-soft w-100 mt-3" id="settingsLogoutBtn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out of FaceTrack
+              </button>
+            </section>
+
+            <section class="settings-card">
+              <div class="settings-head">
+                <span class="sh-icon" style="background:#EFF6FF;color:#2563EB;"><i class="fa-solid fa-circle-info"></i></span>
+                <div>
+                  <h3>About FaceTrack</h3>
+                  <p>Smart Face Recognition Attendance System</p>
+                </div>
+              </div>
+              <div class="info-list">
+                <div class="info-row"><span class="info-label">Version</span><span class="info-value" id="aboutVersion">—</span></div>
+                <div class="info-row"><span class="info-label">Stack</span><span class="info-value">Flask · OpenCV · SQLite</span></div>
+                <div class="info-row"><span class="info-label">Recognition</span><span class="info-value">Haar Cascade + LBPH</span></div>
+                <div class="info-row"><span class="info-label">Privacy</span><span class="info-value">Local storage only</span></div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <p class="footer-note text-center text-muted-ft fs-12 mt-4 mb-0">
+          Settings changes apply immediately. Face data and attendance are never uploaded to a third-party service.
+        </p>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

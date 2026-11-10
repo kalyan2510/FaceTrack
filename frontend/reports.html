@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FaceTrack analytics - daily, weekly and monthly attendance charts, student percentages and downloadable reports.">
+  <meta name="theme-color" content="#14213D">
+  <title>Reports &amp; Analytics · FaceTrack</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="reports">
+  <noscript>
+    <div style="padding:24px;background:#fef3c7;color:#92400e;font-family:sans-serif;">Enable JavaScript to view FaceTrack reports.</div>
+  </noscript>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-wrapper">
+      <header class="topbar" id="topbar"></header>
+
+      <main class="page-content" id="pageContent">
+        <div class="print-header" id="printHeader">
+          <h1>FaceTrack — Analytics Report</h1>
+          <p id="printHeaderMeta">Smart Face Recognition Attendance System</p>
+        </div>
+
+        <div class="page-toolbar no-print">
+          <div>
+            <h2>Reports &amp; Analytics</h2>
+            <p class="toolbar-sub">Attendance insight across days, weeks, months and departments.</p>
+          </div>
+          <div class="toolbar-actions">
+            <button type="button" class="btn btn-light-soft" id="reportExportCsv"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+            <button type="button" class="btn btn-light-soft" id="reportExportExcel"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+            <button type="button" class="btn btn-primary" id="reportPrint"><i class="fa-solid fa-print"></i> Print report</button>
+          </div>
+        </div>
+
+        <div class="panel students-filter-card no-print">
+          <div class="filter-bar">
+            <div class="d-flex align-items-center gap-2">
+              <label class="form-label mb-0" for="reportFrom" style="white-space:nowrap;">From</label>
+              <input type="date" class="form-control" id="reportFrom" style="width:150px;" aria-label="Report start date">
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <label class="form-label mb-0" for="reportTo" style="white-space:nowrap;">To</label>
+              <input type="date" class="form-control" id="reportTo" style="width:150px;" aria-label="Report end date">
+            </div>
+            <div class="ft-tabs">
+              <button type="button" class="report-preset active" data-days="30">30 days</button>
+              <button type="button" class="report-preset" data-days="7">7 days</button>
+              <button type="button" class="report-preset" data-days="90">90 days</button>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="applyReportRange"><i class="fa-solid fa-arrows-rotate"></i> Apply</button>
+            <span class="badge-soft badge-info ms-auto" id="reportSourceBadge"><i class="fa-solid fa-database"></i> Loading</span>
+          </div>
+        </div>
+
+        <div class="report-summary-grid">
+          <div class="report-kpi">
+            <span class="rk-icon"><i class="fa-solid fa-percent"></i></span>
+            <div class="rk-label">Overall Attendance</div>
+            <div class="rk-value" id="kpiAttendance">—</div>
+            <div class="rk-note" id="kpiAttendanceNote">In selected range</div>
+          </div>
+          <div class="report-kpi">
+            <span class="rk-icon green"><i class="fa-solid fa-user-check"></i></span>
+            <div class="rk-label">Present Records</div>
+            <div class="rk-value" id="kpiPresent">—</div>
+            <div class="rk-note" id="kpiPresentNote">Successful check-ins</div>
+          </div>
+          <div class="report-kpi">
+            <span class="rk-icon red"><i class="fa-solid fa-user-xmark"></i></span>
+            <div class="rk-label">Absent Records</div>
+            <div class="rk-value" id="kpiAbsent">—</div>
+            <div class="rk-note" id="kpiAbsentNote">Derived absences</div>
+          </div>
+          <div class="report-kpi">
+            <span class="rk-icon amber"><i class="fa-solid fa-trophy"></i></span>
+            <div class="rk-label">Best Attendance</div>
+            <div class="rk-value" id="kpiBest" style="font-size:17px;">—</div>
+            <div class="rk-note" id="kpiBestNote">Top student in range</div>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-xl-6">
+            <div class="panel h-100">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-chart-column"></i> Daily Attendance</div>
+                  <div class="panel-subtitle">Present vs absent · last 7 working days</div>
+                </div>
+              </div>
+              <div class="chart-wrap"><canvas id="reportDailyChart" aria-label="Daily attendance chart" role="img"></canvas></div>
+            </div>
+          </div>
+          <div class="col-xl-6">
+            <div class="panel h-100">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-chart-line"></i> Weekly Attendance</div>
+                  <div class="panel-subtitle">Attendance percentage · last 8 weeks</div>
+                </div>
+              </div>
+              <div class="chart-wrap"><canvas id="reportWeeklyChart" aria-label="Weekly attendance chart" role="img"></canvas></div>
+            </div>
+          </div>
+          <div class="col-xl-8">
+            <div class="panel h-100">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-chart-area"></i> Monthly Attendance</div>
+                  <div class="panel-subtitle">Attendance percentage across the last six months</div>
+                </div>
+              </div>
+              <div class="chart-wrap"><canvas id="reportMonthlyChart" aria-label="Monthly attendance chart" role="img"></canvas></div>
+            </div>
+          </div>
+          <div class="col-xl-4">
+            <div class="panel h-100">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-building-user"></i> Departments</div>
+                  <div class="panel-subtitle">Student distribution</div>
+                </div>
+              </div>
+              <div class="donut-wrap" style="height:190px;">
+                <canvas id="departmentChart" aria-label="Department student distribution" role="img"></canvas>
+              </div>
+              <div class="dept-legend" id="departmentLegend">
+                <div class="dept-row"><span class="dept-name text-muted-ft">Loading departments…</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel mt-4">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title"><i class="fa-solid fa-table-list"></i> Student-wise Attendance</div>
+              <div class="panel-subtitle" id="reportStudentSubtitle">Attendance percentage within the selected range</div>
+            </div>
+            <div class="panel-head-actions no-print">
+              <div class="filter-search" style="min-width:210px;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" class="form-control" id="reportStudentSearch" placeholder="Search student…" aria-label="Search report students">
+              </div>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table-modern">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Student ID</th>
+                  <th>Department</th>
+                  <th>Classes</th>
+                  <th>Present</th>
+                  <th>Absent</th>
+                  <th>Attendance %</th>
+                  <th>Standing</th>
+                </tr>
+              </thead>
+              <tbody id="reportStudentBody">
+                <tr><td colspan="8"><div class="skeleton" style="height:20px;margin:8px 0"></div><div class="skeleton" style="height:20px;margin:8px 0"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 pt-3" style="border-top:1px solid var(--slate-100);">
+            <span class="fs-12 text-muted-ft" id="reportStudentFooter">Loading analytics…</span>
+            <span class="fs-12 text-muted-ft"><i class="fa-solid fa-circle-info me-1"></i> Percentages use classes held in the selected date range.</span>
+          </div>
+        </div>
+
+        <p class="footer-note text-center text-muted-ft fs-12 mt-4 mb-0">
+          Charts and tables are generated from attendance records. In Demo Mode they use labelled sample data only.
+        </p>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/reports.js"></script>
+</body>
+</html>

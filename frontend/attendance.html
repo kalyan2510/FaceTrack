@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Take live face-recognition attendance with FaceTrack. Duplicate check-ins are prevented automatically.">
+  <meta name="theme-color" content="#14213D">
+  <title>Take Attendance · FaceTrack</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="attendance">
+  <noscript>
+    <div style="padding:24px;background:#fef3c7;color:#92400e;font-family:sans-serif;">Enable JavaScript to use live attendance in FaceTrack.</div>
+  </noscript>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-wrapper">
+      <header class="topbar" id="topbar"></header>
+
+      <main class="page-content" id="pageContent">
+        <div class="page-toolbar">
+          <div>
+            <h2>Take Attendance</h2>
+            <p class="toolbar-sub">Live face recognition with automatic duplicate prevention for today.</p>
+          </div>
+          <div class="toolbar-actions">
+            <a href="records.html" class="btn btn-light-soft"><i class="fa-solid fa-clipboard-check"></i> View records</a>
+            <a href="face-registration.html" class="btn btn-primary"><i class="fa-solid fa-user-shield"></i> Register faces</a>
+          </div>
+        </div>
+
+        <div class="demo-banner" id="attendanceDemoNote" style="display:none;">
+          <i class="fa-solid fa-flask"></i>
+          <span><strong>Demo Mode:</strong> live camera recognition is disabled because it needs the Flask + OpenCV backend. Use the clearly labelled <b>simulated scan</b> on the right to preview the interface. No real attendance is recorded.</span>
+        </div>
+
+        <div class="row g-4">
+          <!-- Camera -->
+          <div class="col-xl-8">
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-camera-retro"></i> Live Camera</div>
+                  <div class="panel-subtitle">Face recognition runs against registered OpenCV samples</div>
+                </div>
+                <span class="badge-soft badge-neutral" id="sessionBadge"><i class="fa-solid fa-circle"></i> Session inactive</span>
+              </div>
+
+              <div class="camera-stage" id="attendanceCameraStage">
+                <video id="attendanceVideo" autoplay muted playsinline aria-label="Live attendance webcam"></video>
+                <div class="camera-placeholder">
+                  <div class="cam-icon"><i class="fa-solid fa-camera"></i></div>
+                  <h4>Recognition camera is off</h4>
+                  <p>Press <strong>Start Camera</strong> to begin recognising registered students. Unknown faces are never marked present.</p>
+                </div>
+                <div class="camera-overlay">
+                  <div class="face-frame">
+                    <span class="corner tl"></span><span class="corner tr"></span>
+                    <span class="corner bl"></span><span class="corner br"></span>
+                    <span class="scan-line"></span>
+                  </div>
+                </div>
+                <span class="cam-status" id="attendanceCamStatus"><span class="status-dot pending"></span> Camera off</span>
+                <span class="cam-clock" id="attendanceCamClock">—</span>
+                <span class="cam-caption" id="attendanceCamCaption">Face the camera · one face at a time</span>
+              </div>
+
+              <div class="camera-actions">
+                <button class="btn btn-primary" type="button" id="startAttendanceBtn"><i class="fa-solid fa-video"></i> Start Camera</button>
+                <button class="btn btn-outline-soft" type="button" id="stopAttendanceBtn" disabled><i class="fa-solid fa-video-slash"></i> Stop Camera</button>
+                <button class="btn btn-green" type="button" id="scanNowBtn" disabled><i class="fa-solid fa-wand-magic-sparkles"></i> Scan Now</button>
+                <button class="btn btn-light-soft" type="button" id="demoScanBtn" style="display:none;"><i class="fa-solid fa-flask"></i> Run Simulated Scan (Demo)</button>
+              </div>
+
+              <div class="camera-meta">
+                <span><i class="fa-regular fa-clock"></i> Scan interval: <strong id="scanIntervalLabel">2.6s</strong></span>
+                <span><i class="fa-solid fa-shield-halved"></i> Unknown faces never marked</span>
+                <span><i class="fa-solid fa-ban"></i> One record per student per day</span>
+              </div>
+
+              <div class="recognition-result" id="recognitionResult" aria-live="polite">
+                <div class="rr-icon"><i class="fa-solid fa-user-check"></i></div>
+                <div>
+                  <div class="rr-label">Recognition status</div>
+                  <div class="rr-name">Waiting for camera</div>
+                  <div class="rr-sub">Start a session to begin automatic face recognition.</div>
+                </div>
+                <div class="rr-score"><b>—</b><small>match</small></div>
+              </div>
+            </div>
+
+            <div class="panel mt-4">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-circle-info"></i> How This Session Works</div>
+                  <div class="panel-subtitle">Transparent recognition flow — no simulated successes</div>
+                </div>
+              </div>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <div class="guideline-item"><i class="fa-solid fa-1"></i><span><strong>Start camera</strong><br>Flask opens a recognition session and the browser streams frames every few seconds.</span></div>
+                </div>
+                <div class="col-md-4">
+                  <div class="guideline-item"><i class="fa-solid fa-2"></i><span><strong>OpenCV validates</strong><br>Haar Cascade detects the face and LBPH compares it with the trained registered model.</span></div>
+                </div>
+                <div class="col-md-4">
+                  <div class="guideline-item"><i class="fa-solid fa-3"></i><span><strong>Mark once</strong><br>Only a recognised student below the distance threshold is marked. A UNIQUE database constraint blocks duplicates.</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live side panel -->
+          <div class="col-xl-4">
+            <div class="panel h-100 d-flex flex-column">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-user-check"></i> Live Attendance</div>
+                  <div class="panel-subtitle" id="liveDate">—</div>
+                </div>
+                <span class="badge-soft badge-info" id="liveClock">—</span>
+              </div>
+
+              <div class="live-summary">
+                <div class="live-stat green">
+                  <div class="ls-value" id="livePresent">—</div>
+                  <div class="ls-label">Present</div>
+                </div>
+                <div class="live-stat red">
+                  <div class="ls-value" id="liveAbsent">—</div>
+                  <div class="ls-label">Absent</div>
+                </div>
+                <div class="live-stat">
+                  <div class="ls-value" id="livePercentage">—</div>
+                  <div class="ls-label">Rate</div>
+                </div>
+              </div>
+
+              <div id="demoScanNote" class="face-status-box warn mb-3" style="display:none;">
+                <i class="fa-solid fa-flask"></i>
+                <div><strong>Simulated data only.</strong> Demo scans use sample students and never represent real face recognition.</div>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="panel-title" style="font-size:12.5px;"><i class="fa-solid fa-list-ul"></i> Today's Check-ins</div>
+                <span class="badge-soft badge-neutral" id="feedCount">0</span>
+              </div>
+
+              <div class="scan-feed flex-grow-1" id="scanFeed">
+                <div class="empty-state" style="padding:26px 10px;">
+                  <div class="empty-icon" style="width:52px;height:52px;font-size:20px;"><i class="fa-solid fa-user-clock"></i></div>
+                  <h4>No check-ins yet</h4>
+                  <p>Recognised students will appear here with their match score and punch-in time.</p>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+              <div class="d-flex justify-content-between align-items-center fs-12 text-muted-ft">
+                <span><i class="fa-solid fa-database me-1 text-primary-ft"></i> <span id="attendanceSource">Live API</span></span>
+                <a href="records.html" class="view-all-link">All records <i class="fa-solid fa-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="footer-note text-center text-muted-ft fs-12 mt-4 mb-0">
+          A recognition match is never guaranteed. If a face is unknown or below the threshold, FaceTrack reports <strong>Unknown</strong> and does not mark attendance.
+        </p>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/attendance.js"></script>
+</body>
+</html>

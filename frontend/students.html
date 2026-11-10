@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FaceTrack student management - add, edit, search and view student records.">
+  <meta name="theme-color" content="#14213D">
+  <title>Students · FaceTrack</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="students">
+  <noscript>
+    <div style="padding:24px;background:#fef3c7;color:#92400e;font-family:sans-serif;">Enable JavaScript to manage FaceTrack students.</div>
+  </noscript>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-wrapper">
+      <header class="topbar" id="topbar"></header>
+
+      <main class="page-content" id="pageContent">
+        <div class="page-toolbar">
+          <div>
+            <h2>Student Directory</h2>
+            <p class="toolbar-sub">Manage student profiles, departments and face registration status.</p>
+          </div>
+          <div class="toolbar-actions">
+            <a href="attendance.html" class="btn btn-light-soft"><i class="fa-solid fa-camera"></i> Take attendance</a>
+            <button type="button" class="btn btn-primary" id="addStudentBtn"><i class="fa-solid fa-user-plus"></i> Add Student</button>
+          </div>
+        </div>
+
+        <div class="panel students-filter-card">
+          <div class="filter-bar">
+            <div class="filter-search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="search" class="form-control" id="studentSearch" placeholder="Search name, ID, email or phone…" aria-label="Search students">
+            </div>
+            <select class="form-select" id="departmentFilter" aria-label="Filter by department" style="width:auto;">
+              <option value="">All Departments</option>
+            </select>
+            <select class="form-select" id="yearFilter" aria-label="Filter by year" style="width:auto;">
+              <option value="">All Years</option>
+              <option>I Year</option>
+              <option>II Year</option>
+              <option>III Year</option>
+              <option>IV Year</option>
+            </select>
+            <button type="button" class="btn btn-outline-soft btn-sm" id="clearStudentFilters"><i class="fa-solid fa-filter-circle-xmark"></i> Clear</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title"><i class="fa-solid fa-user-graduate"></i> All Students</div>
+              <div class="panel-subtitle"><span id="studentsCount">—</span> student records · <span id="studentsFaceCount">—</span> with registered faces</div>
+            </div>
+            <div class="panel-head-actions">
+              <span class="badge-soft badge-info"><i class="fa-solid fa-database"></i> <span id="studentsDataSource">Loading</span></span>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table-modern students-table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Student ID</th>
+                  <th>Department</th>
+                  <th>Year / Section</th>
+                  <th>Phone</th>
+                  <th>Face Data</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="studentsTableBody">
+                <tr><td colspan="7"><div class="skeleton" style="height:20px;margin:8px 0"></div></td></tr>
+                <tr><td colspan="7"><div class="skeleton" style="height:20px;margin:8px 0"></div></td></tr>
+                <tr><td colspan="7"><div class="skeleton" style="height:20px;margin:8px 0"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 pt-3" style="border-top:1px solid var(--slate-100);">
+            <span class="fs-12 text-muted-ft" id="studentsFooter">Loading students…</span>
+            <span class="fs-12 text-muted-ft"><i class="fa-solid fa-shield-halved me-1 text-primary-ft"></i> Face data is validated by OpenCV on the backend</span>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Add/Edit Student modal -->
+  <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <form id="studentForm" novalidate>
+          <div class="modal-header">
+            <div>
+              <h5 class="modal-title" id="studentModalTitle">Add Student</h5>
+              <p class="mb-0 fs-12 text-muted-ft" id="studentModalSubtitle">Create a student profile for attendance and face registration.</p>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-danger py-2 px-3 d-none" id="studentFormError" role="alert" style="font-size:11.5px;border-radius:10px;"></div>
+            <input type="hidden" id="studentIdOriginal">
+
+            <div class="row g-3">
+              <div class="col-md-5">
+                <label class="form-label" for="fieldStudentId">Student ID <span class="req">*</span></label>
+                <input type="text" class="form-control" id="fieldStudentId" placeholder="e.g. CSE2023016" maxlength="24" autocomplete="off">
+                <div class="form-text">3–24 letters, numbers, hyphen or underscore.</div>
+              </div>
+              <div class="col-md-7">
+                <label class="form-label" for="fieldName">Full name <span class="req">*</span></label>
+                <input type="text" class="form-control" id="fieldName" placeholder="e.g. Priya Deshmukh" maxlength="60" autocomplete="off">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="fieldDepartment">Department <span class="req">*</span></label>
+                <select class="form-select" id="fieldDepartment">
+                  <option value="">Select department</option>
+                  <option>Computer Science</option>
+                  <option>Information Technology</option>
+                  <option>Electronics &amp; Comm.</option>
+                  <option>Electrical &amp; Electronics</option>
+                  <option>Mechanical Engg.</option>
+                  <option>AI &amp; Machine Learning</option>
+                  <option>Civil Engineering</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="fieldYear">Year <span class="req">*</span></label>
+                <select class="form-select" id="fieldYear">
+                  <option value="">Select</option>
+                  <option>I Year</option>
+                  <option>II Year</option>
+                  <option>III Year</option>
+                  <option>IV Year</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="fieldSection">Section <span class="req">*</span></label>
+                <select class="form-select" id="fieldSection">
+                  <option>A</option>
+                  <option>B</option>
+                  <option>C</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="fieldEmail">Email address</label>
+                <input type="email" class="form-control" id="fieldEmail" placeholder="student@facetrack.edu" maxlength="120" autocomplete="off">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="fieldPhone">Phone number</label>
+                <input type="tel" class="form-control" id="fieldPhone" placeholder="10-digit mobile number" maxlength="14" autocomplete="off">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Student photograph <span class="text-muted-ft fw-normal">(optional)</span></label>
+                <div class="upload-preview">
+                  <div class="up-avatar" id="studentPhotoPreview"><i class="fa-solid fa-user"></i></div>
+                  <div class="up-body">
+                    <div class="up-title">Profile photo</div>
+                    <div class="up-note">JPG, PNG or WebP · up to 5 MB. Used only for the student directory.</div>
+                  </div>
+                  <label for="studentPhoto" class="btn btn-sm btn-light-soft mb-0"><i class="fa-solid fa-upload"></i> Choose</label>
+                  <input type="file" id="studentPhoto" accept="image/png,image/jpeg,image/webp">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="studentSaveBtn"><i class="fa-solid fa-floppy-disk"></i> Save Student</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Student modal -->
+  <div class="modal fade" id="viewStudentModal" tabindex="-1" aria-labelledby="viewStudentTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="viewStudentTitle">Student profile</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="studentDetails">
+          <div class="skeleton" style="height:80px"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-soft" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="viewEditBtn"><i class="fa-solid fa-pen"></i> Edit student</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/students.js"></script>
+</body>
+</html>

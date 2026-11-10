@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Register a student's face with validated OpenCV face samples in FaceTrack.">
+  <meta name="theme-color" content="#14213D">
+  <title>Face Registration · FaceTrack</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="face-registration">
+  <noscript>
+    <div style="padding:24px;background:#fef3c7;color:#92400e;font-family:sans-serif;">Enable JavaScript to register faces in FaceTrack.</div>
+  </noscript>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-wrapper">
+      <header class="topbar" id="topbar"></header>
+
+      <main class="page-content" id="pageContent">
+        <div class="page-toolbar">
+          <div>
+            <h2>Face Registration</h2>
+            <p class="toolbar-sub">Capture validated face samples and save them to the student's biometric profile.</p>
+          </div>
+          <div class="toolbar-actions">
+            <a href="students.html" class="btn btn-light-soft"><i class="fa-solid fa-user-graduate"></i> Manage students</a>
+            <a href="attendance.html" class="btn btn-primary"><i class="fa-solid fa-camera"></i> Take attendance</a>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <!-- Step 1 -->
+          <div class="col-xl-5">
+            <div class="panel face-left-card h-100">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-user-check"></i> 1. Select Student</div>
+                  <div class="panel-subtitle">Choose the student whose face you are registering</div>
+                </div>
+                <span class="badge-soft badge-info" id="studentCountBadge">—</span>
+              </div>
+
+              <label class="form-label" for="faceStudentSelect">Student</label>
+              <select class="form-select mb-3" id="faceStudentSelect">
+                <option value="">Loading students…</option>
+              </select>
+
+              <div id="selectedStudentCard">
+                <div class="face-status-box info">
+                  <i class="fa-solid fa-circle-info"></i>
+                  <div>Select a student to view their face registration status and begin capturing samples.</div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="panel-head" style="margin-bottom:12px;">
+                <div>
+                  <div class="panel-title" style="font-size:13px;"><i class="fa-solid fa-list-check"></i> Registration Checklist</div>
+                </div>
+              </div>
+              <div class="guideline-list" style="margin-top:0;">
+                <div class="guideline-item"><i class="fa-solid fa-sun"></i><span>Use bright, even lighting. Avoid strong backlight from windows.</span></div>
+                <div class="guideline-item"><i class="fa-solid fa-eye"></i><span>Look straight at the camera with your full face visible — no masks or sunglasses.</span></div>
+                <div class="guideline-item"><i class="fa-solid fa-user"></i><span>Only one person should be in frame. Other faces are rejected by the backend.</span></div>
+                <div class="guideline-item"><i class="fa-solid fa-rotate"></i><span>Capture 3–5 samples with slight angle and expression changes for a stronger model.</span></div>
+                <div class="guideline-item"><i class="fa-solid fa-shield-halved"></i><span>Samples are stored locally in <code>backend/dataset/</code> and never uploaded to a third party.</span></div>
+              </div>
+
+              <div class="face-status-box warn mt-3" id="registrationModeNote">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div>Checking face engine availability…</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="col-xl-7">
+            <div class="panel h-100">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-camera-retro"></i> 2. Capture Face Samples</div>
+                  <div class="panel-subtitle">Each sample is validated by OpenCV before it is registered</div>
+                </div>
+                <span class="badge-soft badge-neutral" id="engineBadge"><i class="fa-solid fa-circle-notch fa-spin"></i> Checking engine</span>
+              </div>
+
+              <div class="camera-stage" id="faceCameraStage">
+                <video id="faceVideo" autoplay muted playsinline aria-label="Live webcam preview"></video>
+                <div class="camera-placeholder">
+                  <div class="cam-icon"><i class="fa-solid fa-camera"></i></div>
+                  <h4>Camera preview is off</h4>
+                  <p>Press <strong>Start Camera</strong> and allow browser camera access to capture validated face samples.</p>
+                </div>
+                <div class="camera-overlay">
+                  <div class="face-frame">
+                    <span class="corner tl"></span><span class="corner tr"></span>
+                    <span class="corner bl"></span><span class="corner br"></span>
+                    <span class="scan-line"></span>
+                  </div>
+                </div>
+                <span class="cam-status" id="faceCamStatus"><span class="status-dot pending"></span> Camera off</span>
+                <span class="cam-clock" id="faceCamClock">—</span>
+                <span class="cam-caption">Keep your face inside the guide · Exactly one face required</span>
+              </div>
+
+              <div class="camera-actions">
+                <button class="btn btn-primary" type="button" id="startFaceCamera"><i class="fa-solid fa-video"></i> Start Camera</button>
+                <button class="btn btn-outline-soft" type="button" id="stopFaceCamera" disabled><i class="fa-solid fa-video-slash"></i> Stop Camera</button>
+                <button class="btn btn-green" type="button" id="captureFaceBtn" disabled><i class="fa-solid fa-camera"></i> Capture Sample</button>
+              </div>
+
+              <div class="camera-meta">
+                <span><i class="fa-solid fa-shield-halved"></i> Backend validates exactly one face</span>
+                <span><i class="fa-solid fa-database"></i> Stored locally</span>
+                <span><i class="fa-solid fa-arrows-rotate"></i> Model retrains automatically</span>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                <div>
+                  <div class="panel-title" style="font-size:13px;"><i class="fa-solid fa-images"></i> Captured Samples</div>
+                  <div class="panel-subtitle">Recommended: 5 validated samples</div>
+                </div>
+                <span class="badge-soft badge-info" id="capturedCountBadge">0 / 5 captured</span>
+              </div>
+
+              <div class="samples-grid" id="faceSamplesGrid">
+                <div class="sample-placeholder"><i class="fa-regular fa-image"></i><span>Empty</span></div>
+                <div class="sample-placeholder"><i class="fa-regular fa-image"></i><span>Empty</span></div>
+                <div class="sample-placeholder"><i class="fa-regular fa-image"></i><span>Empty</span></div>
+                <div class="sample-placeholder"><i class="fa-regular fa-image"></i><span>Empty</span></div>
+                <div class="sample-placeholder"><i class="fa-regular fa-image"></i><span>Empty</span></div>
+              </div>
+
+              <div class="registration-progress">
+                <div class="rp-head">
+                  <span>Sample progress</span>
+                  <span id="sampleProgressLabel">0%</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar" id="sampleProgressBar" role="progressbar" style="width:0%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 flex-wrap mt-3">
+                <button class="btn btn-primary flex-grow-1" type="button" id="registerFaceBtn" disabled>
+                  <i class="fa-solid fa-user-shield"></i> Register Face
+                </button>
+                <button class="btn btn-outline-soft" type="button" id="clearSamplesBtn" disabled>
+                  <i class="fa-regular fa-trash-can"></i> Clear
+                </button>
+              </div>
+
+              <div id="registrationResult" class="mt-3"></div>
+
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+                <span class="fs-12 text-muted-ft" id="facePrivacyNote"><i class="fa-solid fa-lock me-1 text-primary-ft"></i> Face samples are private and only used for this attendance system.</span>
+                <span class="fs-12 text-muted-ft" id="modelStatusText">Model status unknown</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="footer-note text-center text-muted-ft fs-12 mt-4 mb-0">
+          Registration requires the Flask backend with <code>opencv-contrib-python</code>. Demo Mode cannot capture or save real face data.
+        </p>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/face-registration.js"></script>
+</body>
+</html>

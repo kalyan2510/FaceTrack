@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sign in to FaceTrack - Smart Face Recognition Attendance System.">
+  <meta name="theme-color" content="#14213D">
+  <title>Sign in · FaceTrack</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="login" class="login-page">
+  <noscript>
+    <div style="padding:24px;background:#fef3c7;color:#92400e;font-family:sans-serif;">
+      FaceTrack needs JavaScript enabled to sign in.
+    </div>
+  </noscript>
+
+  <div class="login-shell">
+    <!-- Brand / illustration panel -->
+    <section class="login-visual">
+      <a href="login.html" class="login-brand text-decoration-none" aria-label="FaceTrack sign in">
+        <img src="assets/images/logo.svg" alt="FaceTrack logo" width="46" height="46">
+        <span>
+          <span class="lb-name">Face<span>Track</span></span>
+          <span class="lb-tag">Smart Face Recognition Attendance</span>
+        </span>
+      </a>
+
+      <div class="login-visual-copy">
+        <span class="lv-eyebrow"><i class="fa-solid fa-shield-halved"></i> Secure admin portal</span>
+        <h1>Attendance that recognises <span>every face</span> instantly.</h1>
+        <p>FaceTrack brings cameras, students and attendance records together in one professional workspace — with duplicate-safe check-ins and live analytics.</p>
+      </div>
+
+      <div class="login-illustration-wrap">
+        <img src="assets/images/login-illustration.svg" alt="Illustration of a face scanning attendance system with a successful check-in" class="login-illustration" width="640" height="560">
+      </div>
+
+      <div class="login-features">
+        <span class="login-feature"><i class="fa-solid fa-circle-check"></i> OpenCV face engine</span>
+        <span class="login-feature"><i class="fa-solid fa-circle-check"></i> Duplicate-safe daily records</span>
+        <span class="login-feature"><i class="fa-solid fa-circle-check"></i> Excel &amp; CSV reports</span>
+      </div>
+    </section>
+
+    <!-- Form panel -->
+    <section class="login-form-panel">
+      <div class="login-card">
+        <div class="login-mobile-brand">
+          <img src="assets/images/logo.svg" alt="FaceTrack logo" width="40" height="40">
+          <span>
+            <span class="lmb-name">Face<span>Track</span></span>
+            <span class="lmb-tag">Smart Face Recognition Attendance</span>
+          </span>
+        </div>
+
+        <span class="login-role-badge"><i class="fa-solid fa-user-shield"></i> Administrator access</span>
+        <h2>Welcome back</h2>
+        <p class="login-sub">Sign in to manage students, register faces and review attendance records.</p>
+
+        <div class="alert alert-danger py-2 px-3 d-none" id="loginError" role="alert" style="font-size:11.5px;border-radius:10px;"></div>
+
+        <form id="loginForm" class="login-form" novalidate>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email address</label>
+            <div class="input-icon-wrap">
+              <i class="fa-regular fa-envelope"></i>
+              <input type="email" class="form-control" id="email" name="email" placeholder="admin@facetrack.com" autocomplete="username" required>
+              <div class="invalid-feedback">Enter a valid email address.</div>
+            </div>
+          </div>
+
+          <div class="mb-1">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-lock"></i>
+              <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+              <button class="input-action" type="button" id="togglePassword" aria-label="Show password">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+              <div class="invalid-feedback">Password must be at least 6 characters.</div>
+            </div>
+          </div>
+
+          <div class="login-options">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="remember" checked>
+              <label class="form-check-label" for="remember">Remember me</label>
+            </div>
+            <button type="button" class="btn btn-link p-0 text-decoration-none" data-bs-toggle="modal" data-bs-target="#forgotModal" style="font-size:11px;font-weight:600;">Forgot password?</button>
+          </div>
+
+          <button type="submit" class="btn btn-primary login-btn" id="loginBtn">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign in to FaceTrack
+          </button>
+        </form>
+
+        <div class="login-divider">or continue with sample data</div>
+
+        <button type="button" class="btn demo-login-btn" id="useDemoBtn">
+          <i class="fa-solid fa-flask"></i> Explore Demo Mode
+        </button>
+
+        <div class="login-hint">
+          <strong>Demo access</strong> — <button type="button" id="fillDemoCredentials" class="btn btn-link p-0 align-baseline" style="font-size:10px;font-weight:600;">click to fill</button> the sample credentials:<br>
+          <code>admin@facetrack.com</code> &nbsp;/&nbsp; <code>Admin@123</code><br>
+          <span style="color:#92400e;">Demo Mode uses sample data only. It never records real attendance.</span>
+        </div>
+
+        <div class="login-status" id="loginBackendStatus">
+          <span class="status-dot pending"></span> Checking Flask backend…
+        </div>
+
+        <p class="login-footer-note">
+          FaceTrack v1.0 · Smart Face Recognition Attendance System<br>
+          © <span id="loginYear">2026</span> FaceTrack. Built for final-year B.E. CSE.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Forgot password modal -->
+  <div class="modal fade" id="forgotModal" tabindex="-1" aria-labelledby="forgotTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="forgotTitle"><i class="fa-solid fa-key me-2 text-primary-ft"></i> Password help</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="fs-13 text-muted-ft mb-3">For this college project, password resets are handled by the project administrator on the Flask backend.</p>
+          <div class="face-status-box info mb-3">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>Run this command in <code>backend/</code> to reset the default administrator account:</div>
+          </div>
+          <pre class="mb-3" style="font-size:10.5px;background:#0F172A;color:#BFDBFE;border-radius:10px;padding:12px;white-space:pre-wrap;">python -c "from database import init_db; init_db()"</pre>
+          <p class="fs-12 text-muted-ft mb-0">Or delete <code>backend/database/attendance.db</code> and restart the backend to recreate the seeded administrator (<strong>admin@facetrack.com</strong> / <strong>Admin@123</strong>). This deletes all local records.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById("loginYear").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

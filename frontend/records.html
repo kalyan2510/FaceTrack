@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FaceTrack attendance records - daily and student-wise attendance with Excel, CSV and print export.">
+  <meta name="theme-color" content="#14213D">
+  <title>Attendance Records · FaceTrack</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="records">
+  <noscript>
+    <div style="padding:24px;background:#fef3c7;color:#92400e;font-family:sans-serif;">Enable JavaScript to view attendance records.</div>
+  </noscript>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-wrapper">
+      <header class="topbar" id="topbar"></header>
+
+      <main class="page-content" id="pageContent">
+        <div class="print-header" id="printHeader">
+          <h1>FaceTrack — Attendance Report</h1>
+          <p id="printHeaderMeta">Smart Face Recognition Attendance System</p>
+        </div>
+
+        <div class="page-toolbar no-print">
+          <div>
+            <h2>Attendance Records</h2>
+            <p class="toolbar-sub">Browse daily rosters, review student percentages and export verified records.</p>
+          </div>
+          <div class="toolbar-actions">
+            <button type="button" class="btn btn-light-soft" id="exportCsvBtn"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+            <button type="button" class="btn btn-light-soft" id="exportExcelBtn"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+            <button type="button" class="btn btn-primary" id="printRecordsBtn"><i class="fa-solid fa-print"></i> Print</button>
+          </div>
+        </div>
+
+        <div class="records-toolbar no-print">
+          <div class="toolbar-left d-flex align-items-center gap-2 flex-wrap">
+            <div class="ft-tabs" role="tablist" aria-label="Attendance views">
+              <button type="button" class="active" id="dailyTab" role="tab" aria-selected="true"><i class="fa-solid fa-calendar-day"></i> Daily Attendance</button>
+              <button type="button" id="studentTab" role="tab" aria-selected="false"><i class="fa-solid fa-user-graduate"></i> Student-wise</button>
+            </div>
+          </div>
+          <div class="toolbar-right d-flex align-items-center gap-2 flex-wrap">
+            <div class="badge-soft badge-info" id="recordsSourceBadge"><i class="fa-solid fa-database"></i> Loading</div>
+          </div>
+        </div>
+
+        <div class="panel students-filter-card no-print">
+          <div class="filter-bar">
+            <div class="date-nav">
+              <button type="button" id="prevDateBtn" aria-label="Previous day"><i class="fa-solid fa-chevron-left"></i></button>
+              <input type="date" class="form-control" id="recordsDate" aria-label="Attendance date">
+              <button type="button" id="nextDateBtn" aria-label="Next day"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="filter-search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="search" class="form-control" id="recordsSearch" placeholder="Search by student name or ID…" aria-label="Search attendance">
+            </div>
+            <select class="form-select" id="recordsDepartment" aria-label="Filter by department" style="width:auto;">
+              <option value="">All Departments</option>
+            </select>
+            <select class="form-select" id="recordsStatus" aria-label="Filter by status" style="width:auto;">
+              <option value="">All Status</option>
+              <option>Present</option>
+              <option>Absent</option>
+            </select>
+            <button type="button" class="btn btn-outline-soft btn-sm" id="clearRecordFilters"><i class="fa-solid fa-filter-circle-xmark"></i> Clear</button>
+          </div>
+          <div class="mt-2 fs-12 text-muted-ft" id="rangeCaption">Daily roster for today.</div>
+        </div>
+
+        <div class="mini-stats">
+          <div class="mini-stat">
+            <div class="ms-icon blue"><i class="fa-solid fa-users"></i></div>
+            <div><div class="ms-value" id="recordTotal">—</div><div class="ms-label" id="recordTotalLabel">Students</div></div>
+          </div>
+          <div class="mini-stat">
+            <div class="ms-icon green"><i class="fa-solid fa-user-check"></i></div>
+            <div><div class="ms-value" id="recordPresent">—</div><div class="ms-label" id="recordPresentLabel">Present</div></div>
+          </div>
+          <div class="mini-stat">
+            <div class="ms-icon red"><i class="fa-solid fa-user-xmark"></i></div>
+            <div><div class="ms-value" id="recordAbsent">—</div><div class="ms-label" id="recordAbsentLabel">Absent</div></div>
+          </div>
+          <div class="mini-stat">
+            <div class="ms-icon navy"><i class="fa-solid fa-percent"></i></div>
+            <div><div class="ms-value" id="recordPercentage">—</div><div class="ms-label">Attendance Rate</div></div>
+          </div>
+        </div>
+
+        <!-- Daily view -->
+        <div class="panel" id="dailyView">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title"><i class="fa-solid fa-clipboard-check"></i> Daily Attendance</div>
+              <div class="panel-subtitle" id="dailySubtitle">Face-recognition and manual records for the selected day.</div>
+            </div>
+            <span class="badge-soft badge-neutral" id="dailyCountBadge">—</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table-modern">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Student ID</th>
+                  <th>Department</th>
+                  <th>Year / Section</th>
+                  <th>Status</th>
+                  <th>Punch In</th>
+                  <th>Match Score</th>
+                  <th class="text-end no-print">Action</th>
+                </tr>
+              </thead>
+              <tbody id="dailyTableBody">
+                <tr><td colspan="8"><div class="skeleton" style="height:20px;margin:8px 0"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 pt-3" style="border-top:1px solid var(--slate-100);">
+            <span class="fs-12 text-muted-ft" id="dailyFooter">Loading records…</span>
+            <span class="fs-12 text-muted-ft no-print"><i class="fa-solid fa-circle-info me-1"></i> Absent rows are derived when no attendance exists for the day.</span>
+          </div>
+        </div>
+
+        <!-- Student-wise view -->
+        <div class="panel" id="studentView" style="display:none;">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title"><i class="fa-solid fa-chart-simple"></i> Student-wise Attendance</div>
+              <div class="panel-subtitle" id="studentRangeLabel">Last 30 days attendance percentage per student.</div>
+            </div>
+            <span class="badge-soft badge-success" id="studentGoodBadge">≥ 75% good standing</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table-modern">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Student ID</th>
+                  <th>Department</th>
+                  <th>Classes</th>
+                  <th>Present</th>
+                  <th>Absent</th>
+                  <th>Attendance %</th>
+                  <th>Standing</th>
+                  <th class="text-end no-print">Profile</th>
+                </tr>
+              </thead>
+              <tbody id="studentwiseBody">
+                <tr><td colspan="9"><div class="skeleton" style="height:20px;margin:8px 0"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 pt-3" style="border-top:1px solid var(--slate-100);">
+            <span class="fs-12 text-muted-ft" id="studentwiseFooter">Loading student percentages…</span>
+            <span class="fs-12 text-muted-ft"><i class="fa-solid fa-percent me-1"></i> Percentage = present classes ÷ classes held in range</span>
+          </div>
+        </div>
+
+        <p class="footer-note text-center text-muted-ft fs-12 mt-4 mb-0">
+          Exports respect the active tab, date range, search and department filters. Demo Mode exports are clearly labelled sample data.
+        </p>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/records.js"></script>
+</body>
+</html>

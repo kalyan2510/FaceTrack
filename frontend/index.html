@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FaceTrack - Smart Face Recognition Attendance System dashboard. Track students, attendance and reports in real time.">
+  <meta name="theme-color" content="#14213D">
+  <title>Dashboard · FaceTrack</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="dashboard">
+  <noscript>
+    <div style="padding:24px;background:#fef3c7;color:#92400e;font-family:sans-serif;">
+      FaceTrack needs JavaScript enabled to load the dashboard and connect to the attendance API.
+    </div>
+  </noscript>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-wrapper">
+      <header class="topbar" id="topbar"></header>
+
+      <main class="page-content" id="pageContent">
+        <!-- Welcome -->
+        <section class="welcome-hero">
+          <div class="hero-copy">
+            <span class="hero-eyebrow"><span class="status-dot"></span> Face recognition attendance · Live overview</span>
+            <h1><span id="greeting">Welcome</span>, <span id="adminFirstName">Admin</span> <span class="wave">👋</span></h1>
+            <p class="hero-sub">Here is what is happening with your campus attendance today, <span id="heroDate">—</span>. Review live check-ins, monitor trends and keep every record accurate.</p>
+            <div class="hero-actions">
+              <a href="attendance.html" class="hero-btn primary"><i class="fa-solid fa-camera"></i> Take attendance</a>
+              <a href="face-registration.html" class="hero-btn"><i class="fa-solid fa-user-plus"></i> Register a face</a>
+              <a href="reports.html" class="hero-btn"><i class="fa-solid fa-chart-line"></i> View reports</a>
+            </div>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="hero-scan-badge">
+              <span class="hero-scan-icon"><i class="fa-solid fa-user-shield"></i></span>
+            </div>
+            <div class="hero-mini-card">
+              <div class="hm-label">Present today</div>
+              <div class="hm-value"><span id="heroPresent">—</span><small> / <span id="heroTotal">—</span></small></div>
+              <div class="hm-note">Face check-ins recorded today</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Statistics -->
+        <div class="row g-3 g-xl-4 mb-1">
+          <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+              <div class="stat-top">
+                <div class="stat-icon blue"><i class="fa-solid fa-user-graduate"></i></div>
+                <span class="stat-trend up" id="studentsTrend"><i class="fa-solid fa-arrow-trend-up"></i> Enrolled</span>
+              </div>
+              <div class="stat-value" id="statTotalStudents">—</div>
+              <div class="stat-label">Total Students</div>
+              <div class="stat-foot"><i class="fa-solid fa-user-shield"></i> <span><strong id="statFaceRegistered">—</strong> faces registered</span></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+              <div class="stat-top">
+                <div class="stat-icon green"><i class="fa-solid fa-user-check"></i></div>
+                <span class="stat-trend up" id="presentTrend"><i class="fa-solid fa-arrow-up"></i> Today</span>
+              </div>
+              <div class="stat-value" id="statPresentToday">—</div>
+              <div class="stat-label">Present Today</div>
+              <div class="stat-progress green"><span id="presentProgress" style="width:0%"></span></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+              <div class="stat-top">
+                <div class="stat-icon red"><i class="fa-solid fa-user-xmark"></i></div>
+                <span class="stat-trend down" id="absentTrend"><i class="fa-solid fa-arrow-down"></i> Today</span>
+              </div>
+              <div class="stat-value" id="statAbsentToday">—</div>
+              <div class="stat-label">Absent Today</div>
+              <div class="stat-progress red"><span id="absentProgress" style="width:0%"></span></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+              <div class="stat-top">
+                <div class="stat-icon amber"><i class="fa-solid fa-percent"></i></div>
+                <span class="stat-trend flat" id="pctTrend"><i class="fa-solid fa-minus"></i> vs yesterday</span>
+              </div>
+              <div class="stat-value" id="statAttendancePct">—</div>
+              <div class="stat-label">Attendance Percentage</div>
+              <div class="stat-foot"><i class="fa-regular fa-clock"></i> <span>Updated <strong id="statUpdated">just now</strong></span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts row -->
+        <div class="row g-3 g-xl-4 mt-1">
+          <div class="col-xl-7">
+            <div class="panel h-100">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-chart-column"></i> Weekly Attendance</div>
+                  <div class="panel-subtitle">Present and absent students · last 7 working days</div>
+                </div>
+                <div class="panel-head-actions">
+                  <span class="badge-soft badge-info"><i class="fa-solid fa-calendar-week"></i> This week</span>
+                </div>
+              </div>
+              <div class="chart-wrap">
+                <canvas id="weeklyChart" aria-label="Weekly attendance bar chart" role="img"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-5">
+            <div class="panel h-100">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-chart-pie"></i> Today's Summary</div>
+                  <div class="panel-subtitle">Present vs absent snapshot</div>
+                </div>
+              </div>
+              <div class="donut-wrap">
+                <canvas id="summaryChart" aria-label="Present vs absent donut chart" role="img" style="max-height:220px;"></canvas>
+                <div class="donut-center">
+                  <div class="dc-value" id="donutPct">—</div>
+                  <div class="dc-label">Attendance</div>
+                </div>
+              </div>
+              <div class="summary-legend">
+                <div class="legend-row">
+                  <span class="legend-dot" style="background:#16A34A"></span>
+                  <span class="legend-label">Present students</span>
+                  <span class="legend-value" id="legendPresent">—</span>
+                  <span class="legend-pct" id="legendPresentPct">—</span>
+                </div>
+                <div class="legend-row">
+                  <span class="legend-dot" style="background:#E2E8F0"></span>
+                  <span class="legend-label">Absent students</span>
+                  <span class="legend-value" id="legendAbsent">—</span>
+                  <span class="legend-pct" id="legendAbsentPct">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly + quick actions -->
+        <div class="row g-3 g-xl-4 mt-1">
+          <div class="col-xl-8">
+            <div class="panel h-100">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-chart-line"></i> Monthly Attendance Trend</div>
+                  <div class="panel-subtitle">Overall attendance percentage across the last six months</div>
+                </div>
+                <div class="panel-head-actions">
+                  <a href="reports.html" class="btn btn-sm btn-soft">Full analytics <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+              </div>
+              <div class="chart-wrap">
+                <canvas id="monthlyChart" aria-label="Monthly attendance line chart" role="img"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-4">
+            <div class="panel h-100">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-bolt"></i> Quick Actions</div>
+                  <div class="panel-subtitle">Frequently used tools</div>
+                </div>
+              </div>
+              <div class="quick-actions">
+                <a href="students.html#add" class="quick-action">
+                  <span class="qa-icon"><i class="fa-solid fa-user-plus"></i></span>
+                  <strong>Add Student</strong>
+                  <span>Create a new student record</span>
+                </a>
+                <a href="face-registration.html" class="quick-action">
+                  <span class="qa-icon navy"><i class="fa-solid fa-user-shield"></i></span>
+                  <strong>Register Face</strong>
+                  <span>Capture validated face samples</span>
+                </a>
+                <a href="attendance.html" class="quick-action">
+                  <span class="qa-icon green"><i class="fa-solid fa-camera-retro"></i></span>
+                  <strong>Take Attendance</strong>
+                  <span>Start a live recognition session</span>
+                </a>
+                <a href="records.html" class="quick-action">
+                  <span class="qa-icon amber"><i class="fa-solid fa-file-export"></i></span>
+                  <strong>Attendance Records</strong>
+                  <span>Filter, print and export data</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent attendance -->
+        <div class="row g-3 g-xl-4 mt-1">
+          <div class="col-12">
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Attendance</div>
+                  <div class="panel-subtitle">Latest face-recognition check-ins across all departments</div>
+                </div>
+                <div class="panel-head-actions">
+                  <a href="records.html" class="view-all-link">View all records <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table-modern recent-table">
+                  <thead>
+                    <tr>
+                      <th>Student</th>
+                      <th>Student ID</th>
+                      <th>Department</th>
+                      <th>Punch In</th>
+                      <th>Match Score</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentTableBody">
+                    <tr><td colspan="6"><div class="skeleton" style="height:20px;margin:6px 0"></div></td></tr>
+                    <tr><td colspan="6"><div class="skeleton" style="height:20px;margin:6px 0"></div></td></tr>
+                    <tr><td colspan="6"><div class="skeleton" style="height:20px;margin:6px 0"></div></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="footer-note text-center text-muted-ft fs-12 mt-4 mb-0">
+          FaceTrack v1.0 · Smart Face Recognition Attendance System · Data refreshes on page load
+        </p>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Flask / SQLite runtime data
+backend/database/*.db
+backend/database/*.db-journal
+backend/dataset/*
+!backend/dataset/.gitkeep
+backend/trainer/*
+!backend/trainer/.gitkeep
+
+# Logs / OS
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
