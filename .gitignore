@@ -25,3 +25,12 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
+
+# Additional temporary files
+*.log
+.DS_Store
+
+# Environment files
+.env
+.env.*
+!.env.example
